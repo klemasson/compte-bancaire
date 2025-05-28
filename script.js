@@ -219,3 +219,17 @@ clearTransactionsBtn.onclick = () => {
     refreshTransactions();
   }
 };
+
+document.getElementById("exportPDFBtn").addEventListener("click", () => {
+  const appContent = document.getElementById("app");
+  const originalContent = document.body.innerHTML;
+  const printArea = appContent.cloneNode(true);
+
+  // Supprime les boutons pour l'impression
+  printArea.querySelectorAll("button").forEach(btn => btn.remove());
+
+  document.body.innerHTML = "";
+  document.body.appendChild(printArea);
+  window.print();
+  document.body.innerHTML = originalContent;
+});
