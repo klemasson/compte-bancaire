@@ -106,3 +106,18 @@ span {
     margin: 5px 0;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #app, #app * {
+    visibility: visible;
+  }
+  #app {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
