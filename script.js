@@ -1,4 +1,4 @@
-// Variables globales
+// Données
 let balance = 5000.00;
 let transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
 let clients = JSON.parse(localStorage.getItem("clients")) || [];
@@ -12,54 +12,17 @@ if (!username) {
   localStorage.setItem("username", username);
 }
 
-const transactionsTbody = document.getElementById("transactions");
+// Elements DOM
+const transactions = document.getElementById("transactions");
 const balanceSpan = document.getElementById("balance");
 const partnerSelect = document.getElementById("partnerSelect");
-const partnerFormDiv = document.getElementById("partnerForm");
 
 const togglePartnerFormBtn = document.getElementById("togglePartnerFormBtn");
+const partnerFormDiv = document.getElementById("partnerForm");
 const addPartnerBtn = document.getElementById("addPartnerBtn");
 const cancelPartnerBtn = document.getElementById("cancelPartnerBtn");
-const addTransactionBtn = document.getElementById("addTransactionBtn");
-const exportCsvBtn = document.getElementById("exportCsvBtn");
-const clearTransactionsBtn = document.getElementById("clearTransactionsBtn");
 
-// Met à jour la table des transactions
-function updateTable() {
-  transactionsTbody.innerHTML = "";
-  balance = 5000.00;
-
-  transactionList.forEach((tx, index) => {
-    const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
-    balance += signedAmount;
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${tx.date}</td>
-      <td>${tx.type}</td>
-      <td>${tx.desc}</td>
-      <td>${signedAmount.toFixed(2)}</td>
-      <td>${balance.toFixed(2)}</td>
-      <td>
-        <i class="fas ${tx.validated ? 'fa-check-circle' : 'fa-times-circle'}" 
-           style="color:${tx.validated ? 'green' : 'red'}" 
-           onclick="toggleValidation(${index})"></i>
-      </td>
-      <td>${tx.username}</td>
-    `;
-    transactionsTbody.appendChild(row);
-  });
-  balanceSpan.textContent = balance.toFixed(2);
-}
-
-// Basculer la validation d’une transaction
-function toggleValidation(index) {
-  transactionList[index].validated = !transactionList[index].validated;
-  localStorage.setItem("transactions", JSON.stringify(transactionList));
-  updateTable();
-}
-
-// Affiche ou cache le formulaire d’ajout partenaire
+// Affiche ou cache le formulaire partenaire
 function togglePartnerForm(forceHide = false) {
   if (forceHide) {
     partnerFormDiv.style.display = "none";
@@ -81,85 +44,97 @@ function clearPartnerForm() {
 // Met à jour le menu déroulant des partenaires
 function updatePartnerSelect() {
   partnerSelect.innerHTML = '<option value="">-- Aucun --</option>';
-
-  function addOptions(list, type) {
-    list.forEach((p, i) => {
-      const option = document.createElement("option");
-      option.value = `${type}:${i}`;
-      option.textContent = `${p.nom} (${type})`;
-      partnerSelect.appendChild(option);
-    });
-  }
-  addOptions(clients, "client");
-  addOptions(fournisseurs, "fournisseur");
+  clients.forEach((c, i) => {
+    const option = document.createElement("option");
+    option.value = `client:${i}`;
+    option.textContent = `${c.nom} (client)`;
+    partnerSelect.appendChild(option);
+  });
+  fournisseurs.forEach((f, i) => {
+    const option = document.createElement("option");
+    option.value = `fournisseur:${i}`;
+    option.textContent = `${f.nom} (fournisseur)`;
+    partnerSelect.appendChild(option);
+  });
 }
 
-// Ajouter un nouveau client/fournisseur
-function addPartner() {
-  const type = document.getElementById("partnerType").value;
-  const nom = document.getElementById("partnerNom").value.trim();
-  const adresse = document.getElementById("partnerAdresse").value.trim();
-  const npa = document.getElementById("partnerNPA").value.trim();
-  const localite = document.getElementById("partnerLocalite").value.trim();
-  const contact = document.getElementById("partnerContact").value.trim();
+// Met à jour le tableau des transactions
+function updateTable() {
+  transactions.innerHTML = "";
+  balance = 5000.00;
 
-  if (!nom) return alert("Le nom est obligatoire.");
+  transactionList.forEach((tx, index) => {
+    const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
+    balance += signedAmount;
 
-  const newPartner = { nom, adresse, npa, localite, contact };
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${tx.date}</td>
+      <td>${tx.type}</td>
+      <td>${tx.partner ? tx.partner + " - " : ""}${tx.desc}</td>
+      <td>${signedAmount.toFixed(2)}</td>
+      <td>${balance.toFixed(2)}</td>
+      <td>
+        <i class="fas ${tx.validated ? 'fa-check-circle' : 'fa-times-circle'}" 
+           style="color:${tx.validated ? 'green' : 'red'}" 
+           onclick="toggleValidation(${index})"></i>
+      </td>
+      <td>${tx.username}</td>
+    `;
+    transactions.appendChild(row);
+  });
 
-  if (type === "client") {
-    clients.push(newPartner);
-    localStorage.setItem("clients", JSON.stringify(clients));
-  } else {
-    fournisseurs.push(newPartner);
-    localStorage.setItem("fournisseurs", JSON.stringify(fournisseurs));
-  }
-
-  updatePartnerSelect();
-  togglePartnerForm(true);
+  balanceSpan.textContent = balance.toFixed(2);
 }
 
-// Ajouter une transaction
+// Ajoute une transaction
 function addTransaction() {
   const type = document.getElementById("type").value;
-  const descInput = document.getElementById("desc").value.trim();
+  const desc = document.getElementById("desc").value.trim();
   const amount = parseFloat(document.getElementById("amount").value);
+  const partnerVal = partnerSelect.value;
+
   if (isNaN(amount) || amount <= 0) return alert("Veuillez entrer un montant valide.");
+  if (!desc) return alert("Veuillez entrer une description.");
 
-  // Récupérer le partenaire sélectionné
-  const partnerValue = partnerSelect.value;
-  let partnerNom = "";
-  if (partnerValue) {
-    const [typeP, index] = partnerValue.split(":");
-    if (typeP === "client") partnerNom = clients[index]?.nom || "";
-    else if (typeP === "fournisseur") partnerNom = fournisseurs[index]?.nom || "";
+  let partnerName = "";
+  if (partnerVal) {
+    const [typePartner, index] = partnerVal.split(":");
+    if (typePartner === "client") partnerName = clients[parseInt(index)].nom;
+    else if (typePartner === "fournisseur") partnerName = fournisseurs[parseInt(index)].nom;
   }
-
-  // Construire la description finale
-  const fullDesc = partnerNom ? `[${partnerNom}] ${descInput}` : descInput;
 
   const date = new Date().toISOString().split("T")[0];
   transactionList.push({
     date,
     type,
-    desc: fullDesc,
+    desc,
     amount,
     validated: false,
-    username
+    username,
+    partner: partnerName
   });
 
   localStorage.setItem("transactions", JSON.stringify(transactionList));
   updateTable();
 
+  // Reset inputs
   document.getElementById("desc").value = "";
   document.getElementById("amount").value = "";
   partnerSelect.value = "";
 }
 
+// Toggle validation d'une transaction
+function toggleValidation(index) {
+  transactionList[index].validated = !transactionList[index].validated;
+  localStorage.setItem("transactions", JSON.stringify(transactionList));
+  updateTable();
+}
+
 // Export CSV
 function exportCSV() {
   const rows = [
-    ["Date", "Type", "Description", "Montant", "Solde", "État", "Utilisateur"]
+    ["Date", "Type", "Partenaire", "Description", "Montant", "Solde", "État", "Utilisateur"]
   ];
   let runningBalance = 5000.00;
   transactionList.forEach(tx => {
@@ -168,6 +143,7 @@ function exportCSV() {
     rows.push([
       tx.date,
       tx.type,
+      tx.partner || "",
       tx.desc,
       signedAmount.toFixed(2),
       runningBalance.toFixed(2),
@@ -185,8 +161,51 @@ function exportCSV() {
   document.body.removeChild(link);
 }
 
-// Effacer toutes les transactions
+// Clear all transactions
 function clearTransactions() {
   if (confirm("Voulez-vous vraiment tout effacer ?")) {
     transactionList = [];
     localStorage.removeItem("transactions");
+    updateTable();
+  }
+}
+
+// Evenements boutons formulaire partenaire
+togglePartnerFormBtn.addEventListener("click", () => togglePartnerForm());
+addPartnerBtn.addEventListener("click", () => {
+  const type = document.getElementById("partnerType").value;
+  const nom = document.getElementById("partnerNom").value.trim();
+  const adresse = document.getElementById("partnerAdresse").value.trim();
+  const npa = document.getElementById("partnerNPA").value.trim();
+  const localite = document.getElementById("partnerLocalite").value.trim();
+  const contact = document.getElementById("partnerContact").value.trim();
+
+  if (!nom) {
+    alert("Le nom est obligatoire.");
+    return;
+  }
+
+  const newPartner = { nom, adresse, npa, localite, contact };
+
+  if (type === "client") {
+    clients.push(newPartner);
+    localStorage.setItem("clients", JSON.stringify(clients));
+  } else {
+    fournisseurs.push(newPartner);
+    localStorage.setItem("fournisseurs", JSON.stringify(fournisseurs));
+  }
+
+  updatePartnerSelect();
+  togglePartnerForm(true);
+});
+cancelPartnerBtn.addEventListener("click", () => togglePartnerForm(true));
+
+// Initialisation page
+updatePartnerSelect();
+updateTable();
+
+// Expose fonctions au global pour les onclick inline
+window.addTransaction = addTransaction;
+window.exportCSV = exportCSV;
+window.clearTransactions = clearTransactions;
+window.toggleValidation = toggleValidation;
