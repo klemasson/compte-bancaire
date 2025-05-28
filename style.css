@@ -1,138 +1,108 @@
+/* Reset simple */
 * {
   box-sizing: border-box;
 }
 
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+body {
   font-family: Arial, sans-serif;
-  background: #f0f2f5;
-  color: #333;
-}
-
-.centered {
+  margin: 0; padding: 20px;
+  background: #f9f9f9;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: white;
-  padding: 20px;
-  max-width: 400px;
-  margin: auto;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 
-.hidden {
-  display: none;
-}
-
-h1, h2, h3 {
+.username-container {
+  margin-bottom: 20px;
   text-align: center;
 }
 
-fieldset {
-  background: white;
-  border: 1px solid #ddd;
-  padding: 15px;
-  margin: 15px 0;
-  border-radius: 8px;
-}
-
-legend {
-  font-weight: bold;
-  padding: 0 10px;
-}
-
-label {
-  display: block;
-  margin-top: 10px;
-  font-weight: 600;
-}
-
-input[type=text], input[type=number], select {
-  width: 100%;
-  padding: 7px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+#usernameInput {
+  padding: 8px;
+  font-size: 1rem;
+  width: 250px;
+  margin-right: 8px;
 }
 
 button {
-  margin-top: 15px;
-  padding: 10px 15px;
-  background-color: #007bff;
-  border: none;
-  border-radius: 4px;
-  color: white;
   cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
+  background-color: #4CAF50;
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #45a049;
+}
+
+.user-display {
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+section {
+  background: white;
+  padding: 15px;
+  margin-bottom: 25px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  width: 100%;
+  max-width: 900px;
+}
+
+section h2 {
+  margin-top: 0;
+}
+
+section input, section select {
+  padding: 8px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 150px;
 }
 
 table {
   width: 100%;
+  max-width: 900px;
   border-collapse: collapse;
-  margin-top: 15px;
   background: white;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
 }
 
 th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
   text-align: center;
+  font-size: 0.95rem;
 }
 
 th {
-  background-color: #f7f7f7;
-  font-weight: 700;
+  background-color: #f2f2f2;
 }
 
-td i {
-  cursor: pointer;
-  font-size: 1.2em;
+span {
+  user-select: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   body {
     padding: 10px;
   }
-  table, thead, tbody, th, td, tr {
-    display: block;
+  section, table {
+    max-width: 100%;
   }
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-  tr {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  td {
-    border: none;
-    border-bottom: 1px solid #eee;
-    position: relative;
-    padding-left: 50%;
-    text-align: left;
-  }
-  td:before {
-    position: absolute;
-    top: 12px;
-    left: 15px;
-    width: 45%;
-    white-space: nowrap;
-    font-weight: 700;
-    content: attr(data-label);
+  section input, section select, button {
+    width: 100%;
+    margin: 5px 0;
   }
 }
