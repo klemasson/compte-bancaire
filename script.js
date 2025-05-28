@@ -233,3 +233,9 @@ document.getElementById("exportPDFBtn").addEventListener("click", () => {
   window.print();
   document.body.innerHTML = originalContent;
 });
+
+document.getElementById("clearTransactionsBtn").addEventListener("click", () => {
+  transactions = [];
+  localStorage.removeItem("transactions");
+  renderTransactions();
+});
