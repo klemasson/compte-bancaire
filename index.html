@@ -100,7 +100,7 @@
   const transactionsTbody = document.getElementById("transactions");
   const balanceSpan = document.getElementById("balance");
 
-  // Fonctions
+  // Fonction pour rafraîchir la liste clients
   function refreshClientOptions() {
     clientSelect.innerHTML = '<option value="">-- Choisir un client/fournisseur --</option>';
     clients.forEach((c, i) => {
@@ -111,16 +111,22 @@
     });
   }
 
+  // Rafraîchir le tableau des transactions avec validation
   function refreshTransactions() {
     transactionsTbody.innerHTML = "";
     balance = 5000.00;
-    transactions.forEach(tx => {
+    transactions.forEach((tx, index) => {
       const tr = document.createElement("tr");
       const dateStr = new Date(tx.date).toLocaleString();
       let clientName = clients[tx.clientIndex] ? clients[tx.clientIndex].name : "N/A";
       let amount = parseFloat(tx.amount);
       if (["Retrait", "Virement", "Paiement QR", "Frais"].includes(tx.type)) amount = -amount;
       balance += amount;
+
+      // Icône validation (cliquable)
+      const validationIcon = tx.validated
+        ? `<span style="cursor:pointer; color:green;" onclick="toggleValidation(${index})">&#10004;</span>` // ✔
+        : `<span style="cursor:pointer; color:red;" onclick="toggleValidation(${index})">&#10006;</span>`;  // ✖
 
       tr.innerHTML = `
         <td>${dateStr}</td>
@@ -129,6 +135,7 @@
         <td>${tx.desc}</td>
         <td>${amount.toFixed(2)}</td>
         <td>${balance.toFixed(2)}</td>
+        <td>${validationIcon}</td>
         <td>${tx.user}</td>
       `;
       transactionsTbody.appendChild(tr);
@@ -136,13 +143,18 @@
     balanceSpan.textContent = balance.toFixed(2);
   }
 
+  // Permettre toggle validation (clic sur icône)
+  window.toggleValidation = function(index) {
+    transactions[index].validated = !transactions[index].validated;
+    saveToLocalStorage();
+    refreshTransactions();
+  };
+
   function saveToLocalStorage() {
     localStorage.setItem("clients", JSON.stringify(clients));
     localStorage.setItem("transactions", JSON.stringify(transactions));
     localStorage.setItem("username", username);
   }
-
-  // Événements
 
   setUsernameBtn.addEventListener("click", () => {
     const name = usernameInput.value.trim();
@@ -211,7 +223,8 @@
       type: type,
       desc: desc,
       amount: amount,
-      user: username
+      user: username,
+      validated: false  // ajout validation par défaut false
     };
 
     transactions.push(tx);
@@ -222,7 +235,7 @@
   });
 
   exportCSVBtn.addEventListener("click", () => {
-    let csv = "Date;Client/Fournisseur;Type;Description;Montant;Solde;Utilisateur\n";
+    let csv = "Date;Client/Fournisseur;Type;Description;Montant;Solde;Validé;Utilisateur\n";
     let tempBalance = 5000.00;
     transactions.forEach(tx => {
       let dateStr = new Date(tx.date).toLocaleString();
@@ -230,7 +243,7 @@
       let amount = parseFloat(tx.amount);
       if (["Retrait", "Virement", "Paiement QR", "Frais"].includes(tx.type)) amount = -amount;
       tempBalance += amount;
-      csv += `"${dateStr}";"${clientName}";"${tx.type}";"${tx.desc}";${amount.toFixed(2)};${tempBalance.toFixed(2)};"${tx.user}"\n`;
+      csv += `"${dateStr}";"${clientName}";"${tx.type}";"${tx.desc}";${amount.toFixed(2)};${tempBalance.toFixed(2)};"${tx.validated ? 'Oui' : 'Non'}";"${tx.user}"\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -249,5 +262,6 @@
   });
 
 </script>
+
 </body>
 </html>
