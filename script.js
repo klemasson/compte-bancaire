@@ -1,24 +1,32 @@
-let balance = 5000.00;
-let transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
-let username = localStorage.getItem("username") || prompt("Entrez votre nom d'utilisateur :");
+// Déclare les fonctions en global (window.) pour qu'elles soient accessibles depuis le HTML (onclick)
 
-if (!username) {
-  alert("Un nom d'utilisateur est requis !");
-  location.reload();
-} else {
-  localStorage.setItem("username", username);
+window.username = localStorage.getItem("username") || null;
+
+function askUsername() {
+  if (!window.username) {
+    window.username = prompt("Entrez votre nom d'utilisateur :");
+    if (!window.username) {
+      alert("Un nom d'utilisateur est requis !");
+      location.reload();
+    } else {
+      localStorage.setItem("username", window.username);
+    }
+  }
 }
+
+window.transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
+window.balance = 5000.00;
 
 const transactions = document.getElementById("transactions");
 const balanceSpan = document.getElementById("balance");
 
-function updateTable() {
+window.updateTable = function() {
   transactions.innerHTML = "";
-  balance = 5000.00;
+  window.balance = 5000.00;
 
-  transactionList.forEach((tx, index) => {
+  window.transactionList.forEach((tx, index) => {
     const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
-    balance += signedAmount;
+    window.balance += signedAmount;
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -26,10 +34,10 @@ function updateTable() {
       <td>${tx.type}</td>
       <td>${tx.desc}</td>
       <td>${signedAmount.toFixed(2)}</td>
-      <td>${balance.toFixed(2)}</td>
+      <td>${window.balance.toFixed(2)}</td>
       <td>
         <i class="fas ${tx.validated ? 'fa-check-circle' : 'fa-times-circle'}" 
-           style="color:${tx.validated ? 'green' : 'red'}" 
+           style="color:${tx.validated ? 'green' : 'red'}; cursor:pointer;" 
            onclick="toggleValidation(${index})"></i>
       </td>
       <td>${tx.username}</td>
@@ -37,44 +45,44 @@ function updateTable() {
     transactions.appendChild(row);
   });
 
-  balanceSpan.textContent = balance.toFixed(2);
+  balanceSpan.textContent = window.balance.toFixed(2);
 }
 
-function toggleValidation(index) {
-  transactionList[index].validated = !transactionList[index].validated;
-  localStorage.setItem("transactions", JSON.stringify(transactionList));
-  updateTable();
+window.toggleValidation = function(index) {
+  window.transactionList[index].validated = !window.transactionList[index].validated;
+  localStorage.setItem("transactions", JSON.stringify(window.transactionList));
+  window.updateTable();
 }
 
-function addTransaction() {
+window.addTransaction = function() {
   const type = document.getElementById("type").value;
   const desc = document.getElementById("desc").value;
   const amount = parseFloat(document.getElementById("amount").value);
   if (isNaN(amount) || amount <= 0) return alert("Veuillez entrer un montant valide.");
 
   const date = new Date().toISOString().split("T")[0];
-  transactionList.push({
+  window.transactionList.push({
     date,
     type,
     desc,
     amount,
     validated: false,
-    username: username
+    username: window.username
   });
 
-  localStorage.setItem("transactions", JSON.stringify(transactionList));
-  updateTable();
+  localStorage.setItem("transactions", JSON.stringify(window.transactionList));
+  window.updateTable();
 
   document.getElementById("desc").value = "";
   document.getElementById("amount").value = "";
 }
 
-function exportCSV() {
+window.exportCSV = function() {
   const rows = [
     ["Date", "Type", "Description", "Montant", "Solde", "État", "Utilisateur"]
   ];
   let runningBalance = 5000.00;
-  transactionList.forEach(tx => {
+  window.transactionList.forEach(tx => {
     const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
     runningBalance += signedAmount;
     rows.push([
@@ -97,12 +105,14 @@ function exportCSV() {
   document.body.removeChild(link);
 }
 
-function clearTransactions() {
+window.clearTransactions = function() {
   if (confirm("Voulez-vous vraiment tout effacer ?")) {
-    transactionList = [];
+    window.transactionList = [];
     localStorage.removeItem("transactions");
-    updateTable();
+    window.updateTable();
   }
 }
 
+// Démarre la demande de username puis update la table
+askUsername();
 updateTable();
