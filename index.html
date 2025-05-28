@@ -2,54 +2,50 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compte Bancaire Fictif</title>
   <link rel="stylesheet" href="style.css" />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-
-  <div class="username-container">
-    <label for="usernameInput">Entrez votre nom d'utilisateur :</label>
-    <input type="text" id="usernameInput" />
-    <button id="setUsernameBtn">Valider</button>
-  </div>
-
-  <div id="app" style="display:none;">
+  <div class="container">
     <h1>Compte Bancaire Fictif (CHF)</h1>
-    <div class="user-display">Utilisateur : <span id="userNameDisplay"></span></div>
 
-    <!-- Section clients/fournisseurs -->
-    <section class="client-section">
-      <h2>Ajouter un client/fournisseur</h2>
-      <input id="clientName" placeholder="Nom" />
-      <input id="clientAddress" placeholder="Adresse" />
-      <input id="clientNPA" placeholder="NPA" />
-      <input id="clientLocality" placeholder="Localité" />
-      <input id="clientContact" placeholder="Personne de contact" />
-      <button id="addClientBtn">Ajouter client/fournisseur</button>
-    </section>
+    <div id="userPrompt" class="modal">
+      <div class="modal-content">
+        <label for="usernameInput">Entrez votre nom d'utilisateur :</label>
+        <input type="text" id="usernameInput" />
+        <button onclick="setUsername()">Valider</button>
+      </div>
+    </div>
 
-    <!-- Section transaction -->
-    <section class="transaction-section">
-      <h2>Nouvelle transaction</h2>
-      <select id="clientSelect"><option value="">-- Choisir un client/fournisseur --</option></select>
-      <select id="type">
-        <option value="Dépôt">Dépôt</option>
-        <option value="Retrait">Retrait</option>
-        <option value="Virement">Virement</option>
-        <option value="Paiement QR">Paiement QR</option>
-        <option value="Frais">Frais</option>
-      </select>
-      <input type="text" id="desc" placeholder="Description" />
-      <input type="number" id="amount" placeholder="Montant (CHF)" />
-      <button id="addTransactionBtn">Ajouter</button>
-      <button id="exportCSVBtn">Exporter en CSV</button>
-      <button id="clearTransactionsBtn">Tout effacer</button>
-    </section>
+    <div class="form-section">
+      <div>
+        <label>Nom Client/Fournisseur :</label>
+        <select id="entitySelect"></select>
+        <button onclick="openEntityForm()">Ajouter</button>
+      </div>
+      <div>
+        <label>Type :</label>
+        <select id="type">
+          <option value="Dépôt">Dépôt</option>
+          <option value="Retrait">Retrait</option>
+          <option value="Virement">Virement</option>
+          <option value="Paiement QR">Paiement QR</option>
+          <option value="Frais">Frais</option>
+        </select>
+        <label>Description :</label>
+        <input type="text" id="desc" />
+        <label>Montant (CHF) :</label>
+        <input type="number" id="amount" />
+      </div>
+      <div class="btn-group">
+        <button onclick="addTransaction()">Ajouter</button>
+        <button onclick="exportCSV()">Exporter CSV</button>
+        <button onclick="printPDF()">Exporter en PDF</button>
+        <button onclick="clearTransactions()">Tout effacer</button>
+      </div>
+    </div>
 
     <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
 
@@ -57,8 +53,8 @@
       <thead>
         <tr>
           <th>Date</th>
-          <th>Client/Fournisseur</th>
           <th>Type</th>
+          <th>Client/Fournisseur</th>
           <th>Description</th>
           <th>Montant</th>
           <th>Solde</th>
@@ -68,6 +64,19 @@
       </thead>
       <tbody id="transactions"></tbody>
     </table>
+  </div>
+
+  <!-- Formulaire pour nouveau client/fournisseur -->
+  <div id="entityModal" class="modal">
+    <div class="modal-content">
+      <h3>Ajouter Client ou Fournisseur</h3>
+      <label>Nom :</label><input type="text" id="entityName" />
+      <label>Adresse :</label><input type="text" id="entityAddress" />
+      <label>NPA & Localité :</label><input type="text" id="entityLocality" />
+      <label>Contact :</label><input type="text" id="entityContact" />
+      <button onclick="saveEntity()">Enregistrer</button>
+      <button onclick="closeEntityForm()">Annuler</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
