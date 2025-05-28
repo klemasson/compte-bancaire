@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compte Bancaire Fictif</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+</head>
+<body>
+  <h1>Compte Bancaire Fictif (CHF)</h1>
+  <div>
+    <label>Type :</label>
+    <select id="type">
+      <option value="Dépôt">Dépôt</option>
+      <option value="Retrait">Retrait</option>
+      <option value="Virement">Virement</option>
+      <option value="Paiement QR">Paiement QR</option>
+      <option value="Frais">Frais</option>
+    </select>
+    <label>Description :</label>
+    <input type="text" id="desc" />
+    <label>Montant (CHF) :</label>
+    <input type="number" id="amount" />
+    <button onclick="addTransaction()">Ajouter</button>
+    <button onclick="exportCSV()">Exporter en CSV</button>
+    <button onclick="clearTransactions()">Tout effacer</button>
+  </div>
+
+  <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Montant</th>
+        <th>Solde</th>
+      </tr>
+    </thead>
+    <tbody id="transactions">
+    </tbody>
+  </table>
+
+  <script>
+    let balance = 5000.00;
+    let transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
+
+    const transactions = document.getElementById("transactions");
+    const balanceSpan = document.getElementById("balance");
+
+    function updateTable() {
+      transactions.innerHTML = "";
+      balance = 5000.00;
+      transactionList.forEach(tx => {
+        const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
+        balance += signedAmount;
+        const row = `<tr>
+          <td>${tx.date}</td>
+          <td>${tx.type}</td>
+          <td>${tx.desc}</td>
+          <td>${signedAmount.toFixed(2)}</td>
+          <td>${balance.toFixed(2)}</td>
+        </tr>`;
+        transactions.innerHTML += row;
+      });
+      balanceSpan.textContent = balance.toFixed(2);
+    }
+
+    function addTransaction() {
+      const type = document.getElementById("type").value;
+      const desc = document.getElementById("desc").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount <= 0) return alert("Veuillez entrer un montant valide.");
+
+      const date = new Date().toISOString().split("T")[0];
+      transactionList.push({ date, type, desc, amount });
+      localStorage.setItem("transactions", JSON.stringify(transactionList));
+      updateTable();
+
+      document.getElementById("desc").value = "";
+      document.getElementById("amount").value = "";
+    }
+
+    function exportCSV() {
+      const rows = [
+        ["Date", "Type", "Description", "Montant", "Solde"]
+      ];
+      let runningBalance = 5000.00;
+      transactionList.forEach(tx => {
+        const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
+        runningBalance += signedAmount;
+        rows.push([tx.date, tx.type, tx.desc, signedAmount.toFixed(2), runningBalance.toFixed(2)]);
+      });
+      const csvContent = rows.map(e => e.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function clearTransactions() {
+      if (confirm("Voulez-vous vraiment tout effacer ?")) {
+        transactionList = [];
+        localStorage.removeItem("transactions");
+        updateTable();
+      }
+    }
+
+    updateTable();
+  </script>
+</body>
+</html>
