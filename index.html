@@ -4,92 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compte Bancaire Fictif</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
+
+  <!-- Section saisie nom utilisateur -->
+  <section id="user-section" class="centered">
+    <h2>Bienvenue !</h2>
+    <label for="usernameInput">Entrez votre nom d'utilisateur :</label><br/>
+    <input id="usernameInput" type="text" placeholder="Votre nom" /><br/>
+    <button id="setUsernameBtn">Valider</button>
+  </section>
+
+  <!-- Section principale -->
+  <section id="main-app" class="hidden">
     <h1>Compte Bancaire Fictif (CHF)</h1>
 
-    <section id="user-section" class="centered">
-      <label for="usernameInput">Nom d'utilisateur :</label>
-      <input type="text" id="usernameInput" placeholder="Votre nom..." />
-      <button id="setUsernameBtn">Valider</button>
-    </section>
+    <!-- Formulaire clients/fournisseurs -->
+    <fieldset>
+      <legend>Ajouter un client/fournisseur</legend>
+      <input type="text" id="clientName" placeholder="Nom" required />
+      <input type="text" id="clientAddress" placeholder="Adresse" required />
+      <input type="text" id="clientNPA" placeholder="NPA" required />
+      <input type="text" id="clientLocality" placeholder="Localité" required />
+      <input type="text" id="clientContact" placeholder="Personne de contact" required />
+      <button id="addClientBtn">Ajouter Client/Fournisseur</button>
+    </fieldset>
 
-    <section id="main-app" class="hidden">
-      <div class="form-group">
-        <label for="partnerSelect">Fournisseur / Client :</label>
-        <select id="partnerSelect">
-          <option value="">-- Choisir --</option>
-        </select>
-        <button id="addPartnerBtn">Ajouter Fournisseur/Client</button>
-      </div>
+    <!-- Formulaire transactions -->
+    <fieldset>
+      <legend>Nouvelle transaction</legend>
 
-      <div id="partnerForm" class="hidden">
-        <h2>Ajouter Fournisseur / Client</h2>
-        <label for="partnerName">Nom :</label>
-        <input type="text" id="partnerName" placeholder="Nom" />
+      <label for="clientSelect">Client/Fournisseur :</label>
+      <select id="clientSelect">
+        <option value="" disabled selected>Choisir un client/fournisseur</option>
+      </select>
 
-        <label for="partnerAddress">Adresse :</label>
-        <input type="text" id="partnerAddress" placeholder="Adresse" />
+      <label for="type">Type :</label>
+      <select id="type">
+        <option value="Dépôt">Dépôt</option>
+        <option value="Retrait">Retrait</option>
+        <option value="Virement">Virement</option>
+        <option value="Paiement QR">Paiement QR</option>
+        <option value="Frais">Frais</option>
+      </select>
 
-        <label for="partnerNPA">NPA :</label>
-        <input type="text" id="partnerNPA" placeholder="NPA" />
+      <label for="desc">Description :</label>
+      <input type="text" id="desc" />
 
-        <label for="partnerLocality">Localité :</label>
-        <input type="text" id="partnerLocality" placeholder="Localité" />
+      <label for="amount">Montant (CHF) :</label>
+      <input type="number" id="amount" step="0.01" />
 
-        <label for="partnerContact">Personne de contact :</label>
-        <input type="text" id="partnerContact" placeholder="Contact" />
+      <button id="addTransactionBtn">Ajouter</button>
+      <button id="exportCSVBtn">Exporter en CSV</button>
+      <button id="clearTransactionsBtn">Tout effacer</button>
+    </fieldset>
 
-        <button id="savePartnerBtn">Enregistrer</button>
-        <button id="cancelPartnerBtn">Annuler</button>
-      </div>
+    <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
 
-      <div class="form-controls">
-        <label for="typeSelect">Type :</label>
-        <select id="typeSelect">
-          <option value="Dépôt">Dépôt</option>
-          <option value="Retrait">Retrait</option>
-          <option value="Virement">Virement</option>
-          <option value="Paiement QR">Paiement QR</option>
-          <option value="Frais">Frais</option>
-        </select>
-
-        <label for="descInput">Description :</label>
-        <input type="text" id="descInput" placeholder="Description" />
-
-        <label for="amountInput">Montant (CHF) :</label>
-        <input type="number" id="amountInput" placeholder="0.00" min="0" step="0.01" />
-
-        <button id="addTransactionBtn">Ajouter</button>
-        <button id="exportCSVBtn">Exporter en CSV</button>
-        <button id="clearTransactionsBtn">Tout effacer</button>
-      </div>
-
-      <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Fournisseur/Client</th>
-            <th>Description</th>
-            <th>Montant</th>
-            <th>Solde</th>
-            <th>État</th>
-            <th>Utilisateur</th>
-          </tr>
-        </thead>
-        <tbody id="transactionsBody"></tbody>
-      </table>
-    </section>
-  </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client/Fournisseur</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Montant</th>
+          <th>Solde</th>
+          <th>État</th>
+          <th>Utilisateur</th>
+        </tr>
+      </thead>
+      <tbody id="transactions"></tbody>
+    </table>
+  </section>
 
   <script src="script.js"></script>
 </body>
