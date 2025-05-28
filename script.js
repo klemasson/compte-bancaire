@@ -1,4 +1,6 @@
 // Déclare les fonctions en global (window.) pour qu'elles soient accessibles depuis le HTML (onclick)
+console.log("script.js chargé");
+alert("Bienvenue sur le compte bancaire !");
 
 window.username = localStorage.getItem("username") || null;
 
