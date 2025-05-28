@@ -9,11 +9,11 @@
 </head>
 <body>
 
-  <!-- Section saisie nom utilisateur -->
+  <!-- Section saisie utilisateur -->
   <section id="user-section" class="centered">
     <h2>Bienvenue !</h2>
     <label for="usernameInput">Entrez votre nom d'utilisateur :</label><br/>
-    <input id="usernameInput" type="text" placeholder="Votre nom" /><br/>
+    <input id="usernameInput" type="text" placeholder="Votre nom" autocomplete="off" /><br/>
     <button id="setUsernameBtn">Valider</button>
   </section>
 
@@ -21,7 +21,6 @@
   <section id="main-app" class="hidden">
     <h1>Compte Bancaire Fictif (CHF)</h1>
 
-    <!-- Formulaire clients/fournisseurs -->
     <fieldset>
       <legend>Ajouter un client/fournisseur</legend>
       <input type="text" id="clientName" placeholder="Nom" required />
@@ -32,7 +31,6 @@
       <button id="addClientBtn">Ajouter Client/Fournisseur</button>
     </fieldset>
 
-    <!-- Formulaire transactions -->
     <fieldset>
       <legend>Nouvelle transaction</legend>
 
@@ -51,10 +49,10 @@
       </select>
 
       <label for="desc">Description :</label>
-      <input type="text" id="desc" />
+      <input type="text" id="desc" autocomplete="off" />
 
       <label for="amount">Montant (CHF) :</label>
-      <input type="number" id="amount" step="0.01" />
+      <input type="number" id="amount" step="0.01" autocomplete="off" />
 
       <button id="addTransactionBtn">Ajouter</button>
       <button id="exportCSVBtn">Exporter en CSV</button>
