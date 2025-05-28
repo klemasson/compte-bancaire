@@ -2,58 +2,95 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compte Bancaire Fictif</title>
-  <!-- Font Awesome pour les icônes coche/croix -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    td i {
-      cursor: pointer;
-      font-size: 1.2em;
-    }
-  </style>
 </head>
 <body>
-  <h1>Compte Bancaire Fictif (CHF)</h1>
+  <div class="container">
+    <h1>Compte Bancaire Fictif (CHF)</h1>
 
-  <div>
-    <label>Type :</label>
-    <select id="type">
-      <option value="Dépôt">Dépôt</option>
-      <option value="Retrait">Retrait</option>
-      <option value="Virement">Virement</option>
-      <option value="Paiement QR">Paiement QR</option>
-      <option value="Frais">Frais</option>
-    </select>
-    <label>Description :</label>
-    <input type="text" id="desc" />
-    <label>Montant (CHF) :</label>
-    <input type="number" id="amount" />
-    <!-- Ces boutons appellent les fonctions JS globales -->
-    <button onclick="addTransaction()">Ajouter</button>
-    <button onclick="exportCSV()">Exporter en CSV</button>
-    <button onclick="clearTransactions()">Tout effacer</button>
+    <section id="user-section" class="centered">
+      <label for="usernameInput">Nom d'utilisateur :</label>
+      <input type="text" id="usernameInput" placeholder="Votre nom..." />
+      <button id="setUsernameBtn">Valider</button>
+    </section>
+
+    <section id="main-app" class="hidden">
+      <div class="form-group">
+        <label for="partnerSelect">Fournisseur / Client :</label>
+        <select id="partnerSelect">
+          <option value="">-- Choisir --</option>
+        </select>
+        <button id="addPartnerBtn">Ajouter Fournisseur/Client</button>
+      </div>
+
+      <div id="partnerForm" class="hidden">
+        <h2>Ajouter Fournisseur / Client</h2>
+        <label for="partnerName">Nom :</label>
+        <input type="text" id="partnerName" placeholder="Nom" />
+
+        <label for="partnerAddress">Adresse :</label>
+        <input type="text" id="partnerAddress" placeholder="Adresse" />
+
+        <label for="partnerNPA">NPA :</label>
+        <input type="text" id="partnerNPA" placeholder="NPA" />
+
+        <label for="partnerLocality">Localité :</label>
+        <input type="text" id="partnerLocality" placeholder="Localité" />
+
+        <label for="partnerContact">Personne de contact :</label>
+        <input type="text" id="partnerContact" placeholder="Contact" />
+
+        <button id="savePartnerBtn">Enregistrer</button>
+        <button id="cancelPartnerBtn">Annuler</button>
+      </div>
+
+      <div class="form-controls">
+        <label for="typeSelect">Type :</label>
+        <select id="typeSelect">
+          <option value="Dépôt">Dépôt</option>
+          <option value="Retrait">Retrait</option>
+          <option value="Virement">Virement</option>
+          <option value="Paiement QR">Paiement QR</option>
+          <option value="Frais">Frais</option>
+        </select>
+
+        <label for="descInput">Description :</label>
+        <input type="text" id="descInput" placeholder="Description" />
+
+        <label for="amountInput">Montant (CHF) :</label>
+        <input type="number" id="amountInput" placeholder="0.00" min="0" step="0.01" />
+
+        <button id="addTransactionBtn">Ajouter</button>
+        <button id="exportCSVBtn">Exporter en CSV</button>
+        <button id="clearTransactionsBtn">Tout effacer</button>
+      </div>
+
+      <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Fournisseur/Client</th>
+            <th>Description</th>
+            <th>Montant</th>
+            <th>Solde</th>
+            <th>État</th>
+            <th>Utilisateur</th>
+          </tr>
+        </thead>
+        <tbody id="transactionsBody"></tbody>
+      </table>
+    </section>
   </div>
 
-  <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Montant</th>
-        <th>Solde</th>
-        <th>État</th>
-        <th>Utilisateur</th>
-      </tr>
-    </thead>
-    <tbody id="transactions"></tbody>
-  </table>
-
-  <!-- Chargement du script externe JS -->
   <script src="script.js"></script>
 </body>
 </html>
