@@ -1,267 +1,73 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Compte Bancaire Fictif</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  input, select, button { margin: 5px 0; padding: 7px; width: 100%; max-width: 300px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background-color: #eee; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compte Bancaire Fictif</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
 </head>
 <body>
 
-<h2>Compte Bancaire Fictif</h2>
+  <div class="username-container">
+    <label for="usernameInput">Entrez votre nom d'utilisateur :</label>
+    <input type="text" id="usernameInput" />
+    <button id="setUsernameBtn">Valider</button>
+  </div>
 
-<div>
-  <label>Nom utilisateur :</label><br/>
-  <input id="usernameInput" placeholder="Entrez votre nom" />
-  <button id="setUsernameBtn">Valider</button>
-</div>
+  <div id="app" style="display:none;">
+    <h1>Compte Bancaire Fictif (CHF)</h1>
+    <div class="user-display">Utilisateur : <span id="userNameDisplay"></span></div>
 
-<div id="app" style="display:none; margin-top: 20px;">
-  <h3>Bienvenue, <span id="userNameDisplay"></span> !</h3>
+    <section class="client-section">
+      <h2>Ajouter un client/fournisseur</h2>
+      <input id="clientName" placeholder="Nom" />
+      <input id="clientAddress" placeholder="Adresse" />
+      <input id="clientNPA" placeholder="NPA" />
+      <input id="clientLocality" placeholder="Localité" />
+      <input id="clientContact" placeholder="Personne de contact" />
+      <button id="addClientBtn">Ajouter client/fournisseur</button>
+    </section>
 
-  <h4>Ajouter un client/fournisseur</h4>
-  <input id="clientName" placeholder="Nom" />
-  <input id="clientAddress" placeholder="Adresse" />
-  <input id="clientNPA" placeholder="NPA" />
-  <input id="clientLocality" placeholder="Localité" />
-  <input id="clientContact" placeholder="Contact" />
-  <button id="addClientBtn">Ajouter Client/Fournisseur</button>
+    <section class="transaction-section">
+      <h2>Nouvelle transaction</h2>
+      <select id="clientSelect"><option value="">-- Choisir un client/fournisseur --</option></select>
+      <select id="type">
+        <option value="Dépôt">Dépôt</option>
+        <option value="Retrait">Retrait</option>
+        <option value="Virement">Virement</option>
+        <option value="Paiement QR">Paiement QR</option>
+        <option value="Frais">Frais</option>
+      </select>
+      <input type="text" id="desc" placeholder="Description" />
+      <input type="number" id="amount" placeholder="Montant (CHF)" />
+      <button id="addTransactionBtn">Ajouter</button>
+      <button id="exportCSVBtn">Exporter en CSV</button>
+      <button id="clearTransactionsBtn">Tout effacer</button>
+    </section>
 
-  <h4>Nouvelle transaction</h4>
-  <select id="clientSelect">
-    <option value="">-- Choisir un client/fournisseur --</option>
-  </select><br/>
+    <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
 
-  <select id="type">
-    <option value="Dépôt">Dépôt</option>
-    <option value="Retrait">Retrait</option>
-    <option value="Virement">Virement</option>
-    <option value="Paiement QR">Paiement QR</option>
-    <option value="Frais">Frais</option>
-  </select><br/>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client/Fournisseur</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Montant</th>
+          <th>Solde</th>
+          <th>État</th>
+          <th>Utilisateur</th>
+        </tr>
+      </thead>
+      <tbody id="transactions"></tbody>
+    </table>
+  </div>
 
-  <input id="desc" placeholder="Description" />
-  <input id="amount" type="number" step="0.01" placeholder="Montant CHF" />
-  <button id="addTransactionBtn">Ajouter Transaction</button>
-  <button id="exportCSVBtn">Exporter CSV</button>
-  <button id="clearTransactionsBtn">Tout effacer</button>
-
-  <h3>Solde actuel : <span id="balance">5000.00</span> CHF</h3>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Client/Fournisseur</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Montant</th>
-        <th>Solde</th>
-        <th>Utilisateur</th>
-      </tr>
-    </thead>
-    <tbody id="transactions"></tbody>
-  </table>
-</div>
-
-<script>
-  // Variables globales
-  let username = "";
-  let clients = [];
-  let transactions = [];
-  let balance = 5000.00;
-
-  // DOM
-  const usernameInput = document.getElementById("usernameInput");
-  const setUsernameBtn = document.getElementById("setUsernameBtn");
-  const appDiv = document.getElementById("app");
-  const userNameDisplay = document.getElementById("userNameDisplay");
-
-  const clientNameInput = document.getElementById("clientName");
-  const clientAddressInput = document.getElementById("clientAddress");
-  const clientNPAInput = document.getElementById("clientNPA");
-  const clientLocalityInput = document.getElementById("clientLocality");
-  const clientContactInput = document.getElementById("clientContact");
-  const addClientBtn = document.getElementById("addClientBtn");
-
-  const clientSelect = document.getElementById("clientSelect");
-  const typeSelect = document.getElementById("type");
-  const descInput = document.getElementById("desc");
-  const amountInput = document.getElementById("amount");
-  const addTransactionBtn = document.getElementById("addTransactionBtn");
-  const exportCSVBtn = document.getElementById("exportCSVBtn");
-  const clearTransactionsBtn = document.getElementById("clearTransactionsBtn");
-  const transactionsTbody = document.getElementById("transactions");
-  const balanceSpan = document.getElementById("balance");
-
-  // Fonction pour rafraîchir la liste clients
-  function refreshClientOptions() {
-    clientSelect.innerHTML = '<option value="">-- Choisir un client/fournisseur --</option>';
-    clients.forEach((c, i) => {
-      let opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = c.name;
-      clientSelect.appendChild(opt);
-    });
-  }
-
-  // Rafraîchir le tableau des transactions avec validation
-  function refreshTransactions() {
-    transactionsTbody.innerHTML = "";
-    balance = 5000.00;
-    transactions.forEach((tx, index) => {
-      const tr = document.createElement("tr");
-      const dateStr = new Date(tx.date).toLocaleString();
-      let clientName = clients[tx.clientIndex] ? clients[tx.clientIndex].name : "N/A";
-      let amount = parseFloat(tx.amount);
-      if (["Retrait", "Virement", "Paiement QR", "Frais"].includes(tx.type)) amount = -amount;
-      balance += amount;
-
-      // Icône validation (cliquable)
-      const validationIcon = tx.validated
-        ? `<span style="cursor:pointer; color:green;" onclick="toggleValidation(${index})">&#10004;</span>` // ✔
-        : `<span style="cursor:pointer; color:red;" onclick="toggleValidation(${index})">&#10006;</span>`;  // ✖
-
-      tr.innerHTML = `
-        <td>${dateStr}</td>
-        <td>${clientName}</td>
-        <td>${tx.type}</td>
-        <td>${tx.desc}</td>
-        <td>${amount.toFixed(2)}</td>
-        <td>${balance.toFixed(2)}</td>
-        <td>${validationIcon}</td>
-        <td>${tx.user}</td>
-      `;
-      transactionsTbody.appendChild(tr);
-    });
-    balanceSpan.textContent = balance.toFixed(2);
-  }
-
-  // Permettre toggle validation (clic sur icône)
-  window.toggleValidation = function(index) {
-    transactions[index].validated = !transactions[index].validated;
-    saveToLocalStorage();
-    refreshTransactions();
-  };
-
-  function saveToLocalStorage() {
-    localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-    localStorage.setItem("username", username);
-  }
-
-  setUsernameBtn.addEventListener("click", () => {
-    const name = usernameInput.value.trim();
-    if (!name) {
-      alert("Merci d'entrer un nom utilisateur.");
-      return;
-    }
-    username = name;
-    userNameDisplay.textContent = username;
-    usernameInput.value = "";
-    appDiv.style.display = "block";
-    usernameInput.parentElement.style.display = "none";
-
-    // Charger les données locales
-    const storedClients = JSON.parse(localStorage.getItem("clients") || "[]");
-    const storedTransactions = JSON.parse(localStorage.getItem("transactions") || "[]");
-    const storedUsername = localStorage.getItem("username");
-
-    if(storedUsername === username){
-      clients = storedClients;
-      transactions = storedTransactions;
-    }
-    refreshClientOptions();
-    refreshTransactions();
-  });
-
-  addClientBtn.addEventListener("click", () => {
-    const name = clientNameInput.value.trim();
-    if(!name){
-      alert("Nom client obligatoire");
-      return;
-    }
-    clients.push({
-      name: name,
-      address: clientAddressInput.value.trim(),
-      npa: clientNPAInput.value.trim(),
-      locality: clientLocalityInput.value.trim(),
-      contact: clientContactInput.value.trim()
-    });
-    clientNameInput.value = "";
-    clientAddressInput.value = "";
-    clientNPAInput.value = "";
-    clientLocalityInput.value = "";
-    clientContactInput.value = "";
-    refreshClientOptions();
-    saveToLocalStorage();
-  });
-
-  addTransactionBtn.addEventListener("click", () => {
-    const clientIndex = clientSelect.value;
-    if(clientIndex === ""){
-      alert("Veuillez sélectionner un client/fournisseur");
-      return;
-    }
-    const type = typeSelect.value;
-    const desc = descInput.value.trim();
-    let amount = parseFloat(amountInput.value);
-    if(isNaN(amount) || amount <= 0){
-      alert("Montant invalide");
-      return;
-    }
-
-    const tx = {
-      date: new Date().toISOString(),
-      clientIndex: parseInt(clientIndex),
-      type: type,
-      desc: desc,
-      amount: amount,
-      user: username,
-      validated: false  // ajout validation par défaut false
-    };
-
-    transactions.push(tx);
-    descInput.value = "";
-    amountInput.value = "";
-    refreshTransactions();
-    saveToLocalStorage();
-  });
-
-  exportCSVBtn.addEventListener("click", () => {
-    let csv = "Date;Client/Fournisseur;Type;Description;Montant;Solde;Validé;Utilisateur\n";
-    let tempBalance = 5000.00;
-    transactions.forEach(tx => {
-      let dateStr = new Date(tx.date).toLocaleString();
-      let clientName = clients[tx.clientIndex] ? clients[tx.clientIndex].name : "N/A";
-      let amount = parseFloat(tx.amount);
-      if (["Retrait", "Virement", "Paiement QR", "Frais"].includes(tx.type)) amount = -amount;
-      tempBalance += amount;
-      csv += `"${dateStr}";"${clientName}";"${tx.type}";"${tx.desc}";${amount.toFixed(2)};${tempBalance.toFixed(2)};"${tx.validated ? 'Oui' : 'Non'}";"${tx.user}"\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "transactions.csv";
-    link.click();
-  });
-
-  clearTransactionsBtn.addEventListener("click", () => {
-    if(confirm("Voulez-vous vraiment effacer toutes les transactions ?")){
-      transactions = [];
-      refreshTransactions();
-      saveToLocalStorage();
-    }
-  });
-
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
