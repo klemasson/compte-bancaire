@@ -1,69 +1,59 @@
-// Variables globales
-let balance = 5000.0;
-let username = null;
-
-let transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
-let partnersList = JSON.parse(localStorage.getItem("partners")) || [];
-
-// Eléments DOM
+// --- Initialisation ---
 const userSection = document.getElementById("user-section");
 const usernameInput = document.getElementById("usernameInput");
 const setUsernameBtn = document.getElementById("setUsernameBtn");
-
 const mainApp = document.getElementById("main-app");
-const balanceSpan = document.getElementById("balance");
-const transactionsBody = document.getElementById("transactionsBody");
+const displayUsername = document.getElementById("displayUsername"); // (optional, not used here)
 
-const partnerSelect = document.getElementById("partnerSelect");
-const addPartnerBtn = document.getElementById("addPartnerBtn");
+let username = localStorage.getItem("username");
 
-const partnerForm = document.getElementById("partnerForm");
-const partnerNameInput = document.getElementById("partnerName");
-const partnerAddressInput = document.getElementById("partnerAddress");
-const partnerNPAInput = document.getElementById("partnerNPA");
-const partnerLocalityInput = document.getElementById("partnerLocality");
-const partnerContactInput = document.getElementById("partnerContact");
-const savePartnerBtn = document.getElementById("savePartnerBtn");
-const cancelPartnerBtn = document.getElementById("cancelPartnerBtn");
+// Clients/fournisseurs
+const clientName = document.getElementById("clientName");
+const clientAddress = document.getElementById("clientAddress");
+const clientNPA = document.getElementById("clientNPA");
+const clientLocality = document.getElementById("clientLocality");
+const clientContact = document.getElementById("clientContact");
+const addClientBtn = document.getElementById("addClientBtn");
+const clientSelect = document.getElementById("clientSelect");
 
-const typeSelect = document.getElementById("typeSelect");
-const descInput = document.getElementById("descInput");
-const amountInput = document.getElementById("amountInput");
+// Transactions
+const typeSelect = document.getElementById("type");
+const descInput = document.getElementById("desc");
+const amountInput = document.getElementById("amount");
 const addTransactionBtn = document.getElementById("addTransactionBtn");
 const exportCSVBtn = document.getElementById("exportCSVBtn");
 const clearTransactionsBtn = document.getElementById("clearTransactionsBtn");
+const transactionsTbody = document.getElementById("transactions");
+const balanceSpan = document.getElementById("balance");
 
-// Initialisation
+let balance = 5000.00;
+let transactionList = JSON.parse(localStorage.getItem("transactions")) || [];
+let clientList = JSON.parse(localStorage.getItem("clients")) || [];
 
-function init() {
-  // Vérifier si username stocké
-  username = localStorage.getItem("username");
-  if (username) {
-    usernameInput.value = username;
-    showMainApp();
-  } else {
-    showUserSection();
-  }
+// --- Fonctions d'affichage et sauvegarde ---
 
-  renderPartners();
-  updateTable();
-}
-
-// Affiche la section user, cache l'app principale
 function showUserSection() {
   userSection.classList.remove("hidden");
   mainApp.classList.add("hidden");
 }
 
-// Affiche l'app principale, cache la section user
 function showMainApp() {
   userSection.classList.add("hidden");
   mainApp.classList.remove("hidden");
-  balanceSpan.textContent = balance.toFixed(2);
 }
 
-// Sauvegarde username et affiche app principale
-setUsernameBtn.onclick = () => {
+function init() {
+  if (username && username.trim() !== "") {
+    showMainApp();
+  } else {
+    showUserSection();
+  }
+  renderClientOptions();
+  updateTable();
+}
+
+// --- Gestion utilisateurs ---
+setUsernameBtn.addEventListener("click", () => {
   const val = usernameInput.value.trim();
   if (!val) {
     alert("Veuillez entrer un nom d'utilisateur.");
@@ -72,41 +62,139 @@ setUsernameBtn.onclick = () => {
   username = val;
   localStorage.setItem("username", username);
   showMainApp();
-};
+});
 
-// Gestion partenaires
+// --- Gestion clients/fournisseurs ---
+function renderClientOptions() {
+  clientSelect.innerHTML = '<option value="" disabled selected>Choisir un client/fournisseur</option>';
+  clientList.forEach((client, i) => {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = client.name;
+    clientSelect.appendChild(option);
+  });
+}
 
-addPartnerBtn.onclick = () => {
-  partnerForm.classList.remove("hidden");
-  addPartnerBtn.disabled = true;
-};
+addClientBtn.addEventListener("click", () => {
+  const name = clientName.value.trim();
+  const address = clientAddress.value.trim();
+  const npa = clientNPA.value.trim();
+  const locality = clientLocality.value.trim();
+  const contact = clientContact.value.trim();
 
-cancelPartnerBtn.onclick = () => {
-  partnerForm.classList.add("hidden");
-  addPartnerBtn.disabled = false;
-  clearPartnerForm();
-};
-
-savePartnerBtn.onclick = () => {
-  const name = partnerNameInput.value.trim();
-  const address = partnerAddressInput.value.trim();
-  const npa = partnerNPAInput.value.trim();
-  const locality = partnerLocalityInput.value.trim();
-  const contact = partnerContactInput.value.trim();
-
-  if (!name) {
-    alert("Le nom est obligatoire.");
+  if (!name || !address || !npa || !locality || !contact) {
+    alert("Merci de remplir tous les champs client/fournisseur.");
     return;
   }
 
-  partnersList.push({ name, address, npa, locality, contact });
-  localStorage.setItem("partners", JSON.stringify(partnersList));
-  renderPartners();
-  clearPartnerForm();
-  partnerForm.classList.add("hidden");
-  addPartnerBtn.disabled = false;
+  clientList.push({ name, address, npa, locality, contact });
+  localStorage.setItem("clients", JSON.stringify(clientList));
+
+  // Reset form
+  clientName.value = "";
+  clientAddress.value = "";
+  clientNPA.value = "";
+  clientLocality.value = "";
+  clientContact.value = "";
+
+  renderClientOptions();
+  alert("Client/fournisseur ajouté !");
+});
+
+// --- Gestion transactions ---
+function updateTable() {
+  transactionsTbody.innerHTML = "";
+  balance = 5000.00;
+
+  transactionList.forEach((tx, index) => {
+    const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
+    balance += signedAmount;
+
+    const tr = document.createElement("tr");
+
+    // Création des colonnes avec attribut data-label (pour responsive)
+    tr.innerHTML = `
+      <td data-label="Date">${tx.date}</td>
+      <td data-label="Client/Fournisseur">${tx.clientName}</td>
+      <td data-label="Type">${tx.type}</td>
+      <td data-label="Description">${tx.desc}</td>
+      <td data-label="Montant">${signedAmount.toFixed(2)}</td>
+      <td data-label="Solde">${balance.toFixed(2)}</td>
+      <td data-label="État">
+        <i class="fas ${tx.validated ? 'fa-check-circle' : 'fa-times-circle'}" 
+           style="color:${tx.validated ? 'green' : 'red'}; cursor:pointer;" 
+           onclick="toggleValidation(${index})"></i>
+      </td>
+      <td data-label="Utilisateur">${tx.username}</td>
+    `;
+
+    transactionsTbody.appendChild(tr);
+  });
+
+  balanceSpan.textContent = balance.toFixed(2);
+}
+
+window.toggleValidation = function(index) {
+  transactionList[index].validated = !transactionList[index].validated;
+  localStorage.setItem("transactions", JSON.stringify(transactionList));
+  updateTable();
 };
 
-function clearPartnerForm() {
-  partnerNameInput.value = "";
-  partnerAddressInput
+addTransactionBtn.addEventListener("click", () => {
+  const clientIndex = clientSelect.value;
+  const clientNameSelected = clientIndex !== "" ? clientList[clientIndex]?.name : null;
+  const type = typeSelect.value;
+  const desc = descInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+
+  if (!clientNameSelected) {
+    alert("Veuillez sélectionner un client/fournisseur.");
+    return;
+  }
+  if (!desc) {
+    alert("Veuillez entrer une description.");
+    return;
+  }
+  if (isNaN(amount) || amount <= 0) {
+    alert("Veuillez entrer un montant valide.");
+    return;
+  }
+
+  const date = new Date().toISOString().split("T")[0];
+
+  transactionList.push({
+    date,
+    clientName: clientNameSelected,
+    type,
+    desc,
+    amount,
+    validated: false,
+    username
+  });
+
+  localStorage.setItem("transactions", JSON.stringify(transactionList));
+  updateTable();
+
+  descInput.value = "";
+  amountInput.value = "";
+  clientSelect.value = "";
+});
+
+exportCSVBtn.addEventListener("click", () => {
+  const rows = [
+    ["Date", "Client/Fournisseur", "Type", "Description", "Montant", "Solde", "État", "Utilisateur"]
+  ];
+  let runningBalance = 5000.00;
+
+  transactionList.forEach(tx => {
+    const signedAmount = ["Dépôt"].includes(tx.type) ? tx.amount : -tx.amount;
+    runningBalance += signedAmount;
+
+    rows.push([
+      tx.date,
+      tx.clientName,
+      tx.type,
+      tx.desc,
+      signedAmount.toFixed(2),
+      runningBalance.toFixed(2),
+      tx.valid
