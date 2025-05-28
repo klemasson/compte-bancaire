@@ -1,127 +1,108 @@
+/* Reset simple */
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f5f7fa;
-  color: #333;
-  line-height: 1.6;
-}
-
-.container {
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #2c3e50;
-}
-
-form, .actions {
+  font-family: Arial, sans-serif;
+  margin: 0; padding: 20px;
+  background: #f9f9f9;
+  min-height: 100vh;
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.username-container {
   margin-bottom: 20px;
-  justify-content: center;
-  background: #ffffff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-label {
-  margin-right: 5px;
-  font-weight: bold;
-}
-
-input, select {
-  padding: 8px 10px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  min-width: 150px;
-  flex: 1;
+#usernameInput {
+  padding: 8px;
+  font-size: 1rem;
+  width: 250px;
+  margin-right: 8px;
 }
 
 button {
-  background-color: #3498db;
-  color: white;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  background-color: #4CAF50;
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #2980b9;
+  background-color: #45a049;
 }
 
-#balance {
+.user-display {
+  margin-bottom: 20px;
   font-weight: bold;
-  font-size: 1.2em;
-  color: #27ae60;
+}
+
+section {
+  background: white;
+  padding: 15px;
+  margin-bottom: 25px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+  width: 100%;
+  max-width: 900px;
+}
+
+section h2 {
+  margin-top: 0;
+}
+
+section input, section select {
+  padding: 8px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 150px;
 }
 
 table {
   width: 100%;
+  max-width: 900px;
   border-collapse: collapse;
-  margin-top: 10px;
   background: white;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
 }
 
 th, td {
-  padding: 12px;
+  padding: 10px;
+  border: 1px solid #ddd;
   text-align: center;
-  border-bottom: 1px solid #eaeaea;
+  font-size: 0.95rem;
 }
 
 th {
-  background-color: #ecf0f1;
-  font-weight: 600;
+  background-color: #f2f2f2;
 }
 
-tr:hover {
-  background-color: #f1f1f1;
+span {
+  user-select: none;
 }
 
-td i {
-  cursor: pointer;
-  font-size: 1.2em;
-}
-
-.status-icon {
-  font-size: 1.3em;
-}
-
-footer {
-  margin-top: 40px;
-  text-align: center;
-  font-size: 0.9em;
-  color: #888;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  form, .actions {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 700px) {
+  body {
+    padding: 10px;
   }
-
-  table {
-    font-size: 0.9em;
+  section, table {
+    max-width: 100%;
   }
-
-  button {
+  section input, section select, button {
     width: 100%;
+    margin: 5px 0;
   }
 }
