@@ -218,14 +218,6 @@ clearTransactionsBtn.onclick = () => {
     refreshClientOptions();
     refreshTransactions();
   }
-
-  clearTransactionsBtn.onclick = () => {
-  if (confirm("Voulez-vous vraiment tout effacer ?")) {
-    Client/Fournisseur = [];
-    saveToLocalStorage();
-    refreshClientOptions();
-    refreshTransactions();
-  }
 };
 
 document.getElementById("exportPDFBtn").addEventListener("click", () => {
