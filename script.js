@@ -1,4 +1,4 @@
-// DOM Elements
+// DOM
 const usernameInput = document.getElementById("usernameInput");
 const setUsernameBtn = document.getElementById("setUsernameBtn");
 const appDiv = document.getElementById("app");
@@ -17,25 +17,17 @@ const descInput = document.getElementById("desc");
 const amountInput = document.getElementById("amount");
 const addTransactionBtn = document.getElementById("addTransactionBtn");
 const exportCSVBtn = document.getElementById("exportCSVBtn");
-const exportPDFBtn = document.getElementById("exportPDFBtn");
 const clearTransactionsBtn = document.getElementById("clearTransactionsBtn");
-
 const transactionsTbody = document.getElementById("transactions");
 const balanceSpan = document.getElementById("balance");
 
-// Variables
+// Variables globales
 let username = null;
 let clients = JSON.parse(localStorage.getItem("clients")) || [];
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
-let balance = 5000.0;
+let balance = 5000.00;
 
-// Fonctions de persistance
-function saveToLocalStorage() {
-  localStorage.setItem("clients", JSON.stringify(clients));
-  localStorage.setItem("transactions", JSON.stringify(transactions));
-}
-
-// Rafraîchir les options du select client
+// Fonction affichage client dans select
 function refreshClientOptions() {
   clientSelect.innerHTML = '<option value="">-- Choisir un client/fournisseur --</option>';
   clients.forEach((c, i) => {
@@ -46,10 +38,10 @@ function refreshClientOptions() {
   });
 }
 
-// Afficher les transactions
+// Afficher transactions
 function refreshTransactions() {
   transactionsTbody.innerHTML = "";
-  balance = 5000.0;
+  balance = 5000.00;
   transactions.forEach((tx, index) => {
     const tr = document.createElement("tr");
     const dateStr = new Date(tx.date).toLocaleString();
@@ -84,10 +76,51 @@ window.toggleValidation = function(index) {
   refreshTransactions();
 };
 
-// Ajout client
-addClientBtn.addEventListener("click", () => {
+// Sauvegarder dans localStorage
+function saveToLocalStorage() {
+  localStorage.setItem("clients", JSON.stringify(clients));
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+// Gérer la validation du nom d'utilisateur
+setUsernameBtn.onclick = () => {
+  const inputVal = usernameInput.value.trim();
+  if (!inputVal) {
+    alert("Veuillez entrer un nom d'utilisateur valide.");
+    return;
+  }
+  username = inputVal;
+  localStorage.setItem("username", username);
+  usernameInput.value = "";
+  document.querySelector(".username-container").style.display = "none";
+  appDiv.style.display = "block";
+  userNameDisplay.textContent = username;
+
+  refreshClientOptions();
+  refreshTransactions();
+};
+
+// Au chargement, on vérifie si un username est déjà stocké
+window.onload = () => {
+  const savedUsername = localStorage.getItem("username");
+  if (savedUsername) {
+    username = savedUsername;
+    document.querySelector(".username-container").style.display = "none";
+    appDiv.style.display = "block";
+    userNameDisplay.textContent = username;
+
+    refreshClientOptions();
+    refreshTransactions();
+  }
+};
+
+// Ajouter un client/fournisseur
+addClientBtn.onclick = () => {
   const name = clientNameInput.value.trim();
-  if (!name) return;
+  if (!name) {
+    alert("Le nom du client/fournisseur est obligatoire.");
+    return;
+  }
   clients.push({
     name,
     address: clientAddressInput.value.trim(),
@@ -97,84 +130,114 @@ addClientBtn.addEventListener("click", () => {
   });
   saveToLocalStorage();
   refreshClientOptions();
-  clientNameInput.value = clientAddressInput.value = clientNPAInput.value =
-    clientLocalityInput.value = clientContactInput.value = "";
-});
 
-// Ajout transaction
-addTransactionBtn.addEventListener("click", () => {
+  clientNameInput.value = "";
+  clientAddressInput.value = "";
+  clientNPAInput.value = "";
+  clientLocalityInput.value = "";
+  clientContactInput.value = "";
+};
+
+// Ajouter une transaction
+addTransactionBtn.onclick = () => {
   const clientIndex = clientSelect.value;
   const type = typeSelect.value;
   const desc = descInput.value.trim();
   const amount = parseFloat(amountInput.value);
-  if (clientIndex === "" || isNaN(amount)) return;
+
+  if (clientIndex === "") {
+    alert("Veuillez sélectionner un client/fournisseur.");
+    return;
+  }
+  if (!desc) {
+    alert("Veuillez entrer une description.");
+    return;
+  }
+  if (isNaN(amount) || amount <= 0) {
+    alert("Veuillez entrer un montant valide.");
+    return;
+  }
 
   transactions.push({
     date: new Date().toISOString(),
-    clientIndex,
+    clientIndex: parseInt(clientIndex),
     type,
     desc,
     amount,
     validated: false,
-    user: username || "N/A",
+    user: username
   });
+
   saveToLocalStorage();
   refreshTransactions();
-  descInput.value = amountInput.value = "";
-});
+
+  descInput.value = "";
+  amountInput.value = "";
+  clientSelect.value = "";
+};
 
 // Export CSV
-exportCSVBtn.addEventListener("click", () => {
-  let csv = "Date,Client,Fournisseur,Type,Description,Montant,Solde,État,Utilisateur\\n";
-  let tempBalance = 5000.0;
+exportCSVBtn.onclick = () => {
+  const rows = [
+    ["Date", "Client/Fournisseur", "Type", "Description", "Montant", "Solde", "État", "Utilisateur"],
+  ];
+  let runningBalance = 5000.00;
   transactions.forEach(tx => {
-    const dateStr = new Date(tx.date).toLocaleString();
-    let amount = parseFloat(tx.amount);
+    let amount = tx.amount;
     if (["Retrait", "Virement", "Paiement QR", "Frais"].includes(tx.type)) amount = -amount;
-    tempBalance += amount;
+    runningBalance += amount;
     const clientName = clients[tx.clientIndex]?.name || "N/A";
-    const validated = tx.validated ? "Validé" : "Non validé";
-    csv += `${dateStr},${clientName},${tx.type},${tx.desc},${amount.toFixed(2)},${tempBalance.toFixed(2)},${validated},${tx.user}\\n`;
+    rows.push([
+      new Date(tx.date).toLocaleString(),
+      clientName,
+      tx.type,
+      tx.desc,
+      amount.toFixed(2),
+      runningBalance.toFixed(2),
+      tx.validated ? "✅" : "❌",
+      tx.user
+    ]);
   });
 
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+  const csvContent = rows.map(e => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
-  link.href = url;
-  link.download = "transactions.csv";
+  link.href = URL.createObjectURL(blob);
+  link.download = `transactions_${new Date().toISOString().split("T")[0]}.csv`;
+  document.body.appendChild(link);
   link.click();
-  URL.revokeObjectURL(url);
-});
+  document.body.removeChild(link);
+};
 
-// Export PDF (impression)
-exportPDFBtn.addEventListener("click", () => {
+// Tout effacer
+clearTransactionsBtn.onclick = () => {
+  if (confirm("Voulez-vous vraiment tout effacer ?")) {
+    transactions = [];
+    clients = [];
+    saveToLocalStorage();
+    refreshClientOptions();
+    refreshTransactions();
+  }
+
+  clearTransactionsBtn.onclick = () => {
+  if (confirm("Voulez-vous vraiment tout effacer ?")) {
+    Client/Fournisseur = [];
+    saveToLocalStorage();
+    refreshClientOptions();
+    refreshTransactions();
+  }
+};
+
+document.getElementById("exportPDFBtn").addEventListener("click", () => {
   const appContent = document.getElementById("app");
   const originalContent = document.body.innerHTML;
   const printArea = appContent.cloneNode(true);
+
+  // Supprime les boutons pour l'impression
   printArea.querySelectorAll("button").forEach(btn => btn.remove());
+
   document.body.innerHTML = "";
   document.body.appendChild(printArea);
   window.print();
   document.body.innerHTML = originalContent;
-  window.location.reload(); // Recharge le script
 });
-
-// Tout effacer
-clearTransactionsBtn.addEventListener("click", () => {
-  transactions = [];
-  localStorage.removeItem("transactions");
-  refreshTransactions();
-});
-
-// Validation utilisateur
-setUsernameBtn.addEventListener("click", () => {
-  const name = usernameInput.value.trim();
-  if (!name) return;
-  username = name;
-  userNameDisplay.textContent = username;
-  appDiv.style.display = "block";
-});
-
-// Initialisation
-refreshClientOptions();
-refreshTransactions();
